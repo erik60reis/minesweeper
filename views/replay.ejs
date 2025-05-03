@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minesweeper Game Replay</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #f0f0f0;
+    }
+    .game-cell {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #ddd;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    .revealed {
+      background-color: #e5e5e5;
+    }
+    .mine {
+      background-color: #f87171;
+    }
+    .flagged {
+      background-color: #fbbf24;
+    }
+    .highlight {
+      box-shadow: inset 0 0 0 3px #3b82f6;
+    }
+    .color-1 { color: #3b82f6; }
+    .color-2 { color: #10b981; }
+    .color-3 { color: #ef4444; }
+    .color-4 { color: #6366f1; }
+    .color-5 { color: #b45309; }
+    .color-6 { color: #14b8a6; }
+    .color-7 { color: #111827; }
+    .color-8 { color: #6b7280; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+  <div class="max-w-4xl w-full bg-white rounded-lg shadow-lg p-6">
+    <h1 class="text-3xl font-bold text-center mb-6">Minesweeper Replay</h1>
+    
+    <div class="flex flex-col items-center">
+      <div class="flex justify-between items-center w-full mb-4">
+        <div>
+          <span class="font-semibold">Player:</span> <span id="username"><%= username %></span>
+        </div>
+        <div>
+          <span class="font-semibold">Time:</span> <span id="time"><%= time %></span>s
+        </div>
+        <div>
+          <span class="font-semibold">Seed:</span> <span id="seed"><%= seed %></span>
+        </div>
+      </div>
+      
+      <div id="game-board" class="border-2 border-gray-300 inline-block mb-6">
+        <!-- Game grid will be generated here -->
+      </div>
+      
+      <div class="flex gap-4 mb-4">
+        <button id="play-pause" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded transition duration-200">Play</button>
+        <button id="restart" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded transition duration-200">Restart</button>
+        <a href="/" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded transition duration-200">Back to Game</a>
+      </div>
+      
+      <div class="text-sm text-gray-600">
+        <p>Replay shows the exact sequence and timing of moves made by the player.</p>
+        <p>Current move: <span id="current-move">0</span> / <span id="total-moves">0</span></p>
+        <p>Elapsed time: <span id="elapsed-time">0.0</span>s</p>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Replay data from server
+    const replayData = "<%= replayData %>";
+    const gameSeed = "<%= seed %>";
+    const gameTime = <%= time %>;
+  </script>
+  <script src="/js/isaacCSPRNG.js"></script>
+  <script src="/js/replay.js"></script>
+</body>
+</html>
