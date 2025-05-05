@@ -68,40 +68,25 @@ const Score = sequelize.define('Score', {
   }
 });
 
-// Function to generate daily seed
-function generateDailySeed() {
-  const date = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
-  let result = btoa(date);
-  
-  return result;
-}
+// We no longer need daily seed generation since seeds are generated client-side
+// We also no longer need to reset scores daily since players can submit multiple times
 
-// Global variable to store the daily seed
-let dailySeed = generateDailySeed();
-
-// Function to check if we need to reset the seed and scores
+// Placeholder function to maintain compatibility with existing code
 function checkAndResetDaily() {
-  const now = new Date();
-  
-  // If it's midnight (0:00), generate a new seed and clear scores
-  if (now.getHours() === 0 && now.getMinutes() === 0) {
-    console.log('Midnight reset: Generating new seed and clearing scores');
-    dailySeed = generateDailySeed();
-    
-    // Clear all scores from today
-    Score.destroy({
-      where: {
-        createdAt: {
-          [Sequelize.Op.gte]: new Date(now.getFullYear(), now.getMonth(), now.getDate())
-        }
-      }
-    }).then(count => {
-      console.log(`Cleared ${count} scores from today`);
-    }).catch(err => {
-      console.error('Error clearing scores:', err);
-    });
-  }
+  // This function is now empty as we don't need to reset anything daily
+  return;
 }
+
+// Dummy variable to maintain API compatibility
+let dailySeed = "random-seed-placeholder";
+
+// No longer clearing scores daily since we allow multiple submissions
+// The following code has been removed:
+// }).catch(err => {
+//   console.error('Error clearing scores:', err);
+// });
+// }
+// }
 
 // Check for reset every minute
 setInterval(checkAndResetDaily, 60000);
@@ -162,22 +147,7 @@ app.post('/api/scores', async (req, res) => {
   try {
     const { username, time, seed, replayData } = req.body;
     
-    // Check if user already has a score today
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const existingScore = await Score.findOne({ 
-      where: { 
-        username,
-        createdAt: {
-          [Sequelize.Op.gte]: today
-        }
-      } 
-    });
-    
-    if (existingScore) {
-      return res.status(400).json({ error: 'You have already submitted a score today' });
-    }
+    // No longer checking for existing scores since we allow multiple submissions per day
     
     // Create new score
     const newScore = await Score.create({ 

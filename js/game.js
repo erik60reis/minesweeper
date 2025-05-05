@@ -1,7 +1,7 @@
 // Game constants
 const GRID_SIZE = 10;
 const CELL_SIZE = 30;
-const MINE_COUNT = 15;
+const MINE_COUNT = 12; // Reduced from 15 to make the game easier
 
 // Game variables
 let grid = [];
@@ -60,11 +60,10 @@ async function initGame() {
   // Check if user has already played today
   checkIfAlreadyPlayed();
   
-  // Get the daily seed from the server
+  // Generate a random seed for each game instead of using a daily seed
   try {
-    const response = await fetch('/api/seed');
-    const data = await response.json();
-    seed = data.seed;
+    // Generate a new random seed for each game
+    seed = generateSeed(16);
     
     // Initialize the ISAAC CSPRNG with the seed
     rng = new IsaacCSPRNG(seed);
@@ -89,21 +88,13 @@ async function initGame() {
   }
 }
 
-// Check if user has already played today
+// This function is now a placeholder since we allow multiple submissions
 function checkIfAlreadyPlayed() {
-  const submittedScores = JSON.parse(localStorage.getItem('minesweeperSubmittedScores') || '[]');
-  const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
+  // Always hide the "already played" message since multiple submissions are allowed
+  alreadyPlayedElement.classList.add('hidden');
   
-  // Check if user has submitted a score today
-  const playedToday = submittedScores.some(entry => entry.date === today);
-  
-  if (playedToday) {
-    alreadyPlayedElement.classList.remove('hidden');
-  } else {
-    alreadyPlayedElement.classList.add('hidden');
-  }
-  
-  return playedToday;
+  // Always return false to allow multiple submissions
+  return false;
 }
 
 // Create the game grid
@@ -402,10 +393,7 @@ async function saveScore() {
     return;
   }
   
-  if (checkIfAlreadyPlayed()) {
-    alert('You have already submitted a score today');
-    return;
-  }
+  // No need to check if already played since multiple submissions are allowed
   
   try {
     const response = await fetch('/api/scores', {
@@ -424,18 +412,11 @@ async function saveScore() {
     const data = await response.json();
     
     if (response.ok) {
-      // Record that user has played today
-      const submittedScores = JSON.parse(localStorage.getItem('minesweeperSubmittedScores') || '[]');
-      submittedScores.push({
-        username,
-        time: currentTime,
-        date: new Date().toISOString().split('T')[0]
-      });
-      localStorage.setItem('minesweeperSubmittedScores', JSON.stringify(submittedScores));
-      
-      // Hide score form and show already played message
+      // Hide score form after submission
       scoreFormElement.classList.add('hidden');
-      alreadyPlayedElement.classList.remove('hidden');
+      
+      // Show a success message
+      alert('Score submitted successfully!');
       
       // Reload leaderboard
       loadLeaderboard();
