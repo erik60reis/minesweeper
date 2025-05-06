@@ -1,7 +1,7 @@
 // Game constants
 const GRID_SIZE = 10;
 const CELL_SIZE = 30;
-const MINE_COUNT = 15;
+const MINE_COUNT = 12; // Must match the value in game.js
 const REPLAY_SPEED = 500; // milliseconds
 
 // Game variables
@@ -39,7 +39,8 @@ function initReplay() {
   // Update play/pause button
   playPauseButton.textContent = 'Play';
   
-  // Initialize the ISAAC CSPRNG with the exact same seed from the game
+  // Make sure we're using the exact same seed from the original game
+  console.log('Using seed for replay:', gameSeed);
   rng = new IsaacCSPRNG(gameSeed);
   
   // Parse the replay data
@@ -48,7 +49,7 @@ function initReplay() {
   // Create game grid
   createGameGrid();
   
-  // Place mines
+  // Place mines - this must match the original game exactly
   placeMines();
   
   // Update move counter
@@ -62,6 +63,7 @@ function initReplay() {
   
   console.log('Replay initialized with seed:', gameSeed);
   console.log('Replay data length:', parsedReplayData.length);
+  console.log('Mine positions:', mines.map(m => `(${m.x},${m.y})`).join(', '));
 }
 
 // Parse the replay data string into an array of moves with timestamps

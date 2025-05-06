@@ -147,18 +147,35 @@ app.post('/api/scores', async (req, res) => {
   try {
     const { username, time, seed, replayData } = req.body;
     
-    // No longer checking for existing scores since we allow multiple submissions per day
+    // Check if user already has a score
+    const existingScore = await Score.findOne({ where: { username } });
     
-    // Create new score
-    const newScore = await Score.create({ 
-      username, 
-      time, 
-      seed, 
-      replayData,
-      date: new Date()
-    });
-    
-    res.status(201).json(newScore);
+    if (existingScore) {
+      // Only update if new score is better (lower time)
+      if (time < existingScore.time) {
+        // Update existing score
+        existingScore.time = time;
+        existingScore.seed = seed;
+        existingScore.replayData = replayData;
+        existingScore.date = new Date();
+        await existingScore.save();
+        res.status(200).json(existingScore);
+      } else {
+        // New score is not better
+        res.status(400).json({ error: 'Your previous score was better!' });
+      }
+    } else {
+      // Create new score for first-time user
+      const newScore = await Score.create({ 
+        username, 
+        time, 
+        seed, 
+        replayData,
+        date: new Date()
+      });
+      
+      res.status(201).json(newScore);
+    }
   } catch (error) {
     console.error('Error saving score:', error);
     res.status(500).json({ error: 'Server error' });

@@ -1,7 +1,7 @@
 // Game constants
 const GRID_SIZE = 10;
 const CELL_SIZE = 30;
-const MINE_COUNT = 12; // Reduced from 15 to make the game easier
+const MINE_COUNT = 12;
 
 // Game variables
 let grid = [];
@@ -88,13 +88,22 @@ async function initGame() {
   }
 }
 
-// This function is now a placeholder since we allow multiple submissions
-function checkIfAlreadyPlayed() {
-  // Always hide the "already played" message since multiple submissions are allowed
-  alreadyPlayedElement.classList.add('hidden');
-  
-  // Always return false to allow multiple submissions
-  return false;
+// Check if user has already played and has a better score
+async function checkIfAlreadyPlayed() {
+  try {
+    // Get all scores to check if current user exists
+    const response = await fetch('/api/scores');
+    const scores = await response.json();
+    
+    // Hide the message by default
+    alreadyPlayedElement.classList.add('hidden');
+    
+    // We'll check username when they try to submit
+    return false;
+  } catch (error) {
+    console.error('Error checking if already played:', error);
+    return false;
+  }
 }
 
 // Create the game grid
@@ -358,10 +367,9 @@ function endGame(isWin) {
     gameWinElement.classList.remove('hidden');
     finalTimeElement.textContent = currentTime.toFixed(1);
     
-    // Show score form if not already played today
-    if (!checkIfAlreadyPlayed()) {
-      scoreFormElement.classList.remove('hidden');
-    }
+    // Always show score form when game is won
+    // The checkIfAlreadyPlayed function is async and returns a Promise, not a boolean
+    scoreFormElement.classList.remove('hidden');
   } else {
     // Show game over message
     gameOverElement.classList.remove('hidden');
@@ -393,9 +401,17 @@ async function saveScore() {
     return;
   }
   
-  // No need to check if already played since multiple submissions are allowed
-  
   try {
+    // First check if this username already has a score
+    const scoresResponse = await fetch('/api/scores');
+    const scores = await scoresResponse.json();
+    const existingScore = scores.find(score => score.username === username);
+    
+    if (existingScore && parseFloat(currentTime.toFixed(1)) >= existingScore.time) {
+      alert(`You already have a better score of ${existingScore.time} seconds!`);
+      return;
+    }
+    
     const response = await fetch('/api/scores', {
       method: 'POST',
       headers: {
@@ -416,7 +432,11 @@ async function saveScore() {
       scoreFormElement.classList.add('hidden');
       
       // Show a success message
-      alert('Score submitted successfully!');
+      if (existingScore) {
+        alert(`Your previous score has been improved from ${existingScore.time} to ${currentTime.toFixed(1)} seconds!`);
+      } else {
+        alert('Score submitted successfully!');
+      }
       
       // Reload leaderboard
       loadLeaderboard();
